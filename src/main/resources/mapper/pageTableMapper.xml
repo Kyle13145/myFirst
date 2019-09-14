@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sw.digital.dao.PageTableDao">
+
+	<!-- 商品表映射 -->	
+	<resultMap type="com.sw.digital.entity.Goods" id="GoodsMap">
+		<id column="g_id" property="id"  />
+		<result column="g_name" property="name"  />
+		<result column="g_describe" property="describe"  />
+		<result column="g_price" property="price"  />
+		<result column="g_count" property="count"  />
+		<result column="g_attract" property="attract"  />
+		<result column="g_state" property="state"  />
+		<association property="merchant" column="g_merchant" 
+			select="com.sw.digital.dao.MerchantDao.getMerchantByGoodsId"
+		></association>
+		<collection property="goodsSize" column="g_id"
+			select="com.sw.digital.dao.GoodsSizeDao.getGoodsSizeById"
+		></collection>
+		<collection property="goodsImg" column="g_id"
+			select="com.sw.digital.dao.GoodsImgDao.getBoodsImgByGoodsId"
+		></collection>
+	</resultMap>
+	
+	<!-- 商家表映射 -->	
+	<resultMap type="com.sw.digital.entity.Merchant" id="MerchantMap">
+		<id property="id" column="m_id" />
+		<result property="name" column="m_name" />
+		<result property="describe" column="m_describe" />
+		<result property="createtime" column="m_createtime" />
+		<result property="addr" column="m_addr" />
+		<result property="shopkeeper" column="m_shopkeeper" />
+		<result property="state" column="m_state" />
+	</resultMap>
+	
+	
+	<!-- 用户表映射 -->	
+	<resultMap type="com.sw.digital.entity.User" id="UserMap">
+		<id property="id" column="u_id" />
+		<result property="username" column="u_name" />
+		<result property="nickname" column="u_nickname" />
+		<result property="mail" column="u_mail" />
+		<result property="birth" column="u_birth" />
+		<result property="phone" column="u_phone" />
+		<result property="sex" column="u_sex" />
+		<result property="createtime" column="u_createtime" />
+		<result property="role" column="u_role" />
+		<result property="icon" column="u_icon" />
+		<result property="state" column="u_state" />
+	</resultMap>
+	
+	<!-- 管理员表映射 -->
+	<resultMap type="com.sw.digital.entity.Admin" id="AdminMap">
+		<id property="id" column="a_id" />
+		<result property="name" column="a_name" />
+		<result property="createtime" column="a_createtime" />
+		<result property="role" column="a_role" />
+		<result property="icon" column="a_icon" />
+		<result property="state" column="a_state" />
+	</resultMap>
+	
+	<!-- 评论表映射 -->
+	<resultMap type="com.sw.digital.entity.Comment" id="CommentMap">
+		<id property="id" column="c_id" />
+		<result property="detial" column="c_detial" />
+		<result property="date" column="c_date" />
+		<result property="service" column="c_service" />
+		<result property="speed" column="c_speed" />
+		<result property="gdescribe" column="c_gdescribe" />
+		<result property="state" column="c_state" />
+		<association property="goods" column="g_id"
+		select="com.sw.digital.dao.GoodsDao.getGoodsByIdSimple"></association>
+		<association property="user" column="u_id" 
+		select="com.sw.digital.dao.UserDao.getUserById"></association>
+	</resultMap>
+	
+
+	<!-- 分页-商品 -->
+	<select id="queryAllGoodsData" resultMap="GoodsMap">
+		SELECT g.`g_id`,g.`g_name`,g.`g_describe`,g.`g_price`,g.`g_count`,g.`g_attract`,g.`g_state`,g.`g_merchant` FROM goods g 
+		<if test='keyWord!="" or keyWord!=null'>
+			WHERE g_name LIKE '%${keyWord}%'
+		</if>
+		ORDER BY g.`g_id` DESC
+		limit #{page},#{limit}
+	</select>
+
+	<select id="queryAllGoodsCount" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		select count(*) from goods
+		<if test='_parameter != "" and _parameter != null'>
+			where g_name LIKE '%${_parameter}%'
+		</if>
+	</select>
+	
+	
+	<!-- 分页-商家 -->
+	<select id="queryAllMerchantData" resultMap="MerchantMap">
+		SELECT m.`m_id`,m.`m_name`,m.`m_describe`,m.`m_createtime`,m.`m_addr`,m.`m_shopkeeper`,m.`m_state` FROM merchant m
+		<if test='keyWord!="" or keyWord!=null'>
+			WHERE m_name LIKE '%${keyWord}%'
+		</if>
+		limit #{page},#{limit}
+	</select>
+
+	<select id="queryAllMerchantCount" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		select count(*) from merchant
+		<if test='_parameter != "" and _parameter != null'>
+			where m_name LIKE '%${_parameter}%'
+		</if>
+	</select>
+	
+	
+	<!-- 分页-用户 -->
+	<select id="queryAllUserData" resultMap="UserMap">
+		SELECT u.`u_id`,u.`u_name`,u.`u_nickname`,u.`u_mail`,u.`u_birth`,u.`u_phone`,u.`u_sex`,u.`u_createtime`,u.`u_role`,u.`u_icon`,u.`u_state` FROM digital_mall.`user` u
+		<if test='keyWord!="" or keyWord!=null'>
+			WHERE u_name LIKE '%${keyWord}%' OR u_nickname LIKE '%${keyWord}%'
+		</if>
+		limit #{page},#{limit}
+	</select>
+
+	<select id="queryAllUserCount" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		select count(*) from user
+		<if test='_parameter != "" and _parameter != null'>
+			where u_nickname LIKE '%${_parameter}%' OR u_name LIKE '%${_parameter}%'
+		</if>
+	</select>
+	
+	<!-- 分页管理员 -->
+	<select id="queryAllAdminData" resultMap="AdminMap">
+		SELECT a_id,a_name,a_createtime,a_role,a_icon,a_state FROM admin
+		<if test='keyWord!="" or keyWord!=null'>
+			WHERE a_name LIKE '%${keyWord}%'
+		</if>
+		limit #{page},#{limit}
+	</select>
+
+	<select id="queryAllAdminCount" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		select count(*) from admin
+		<if test='_parameter != "" and _parameter != null'>
+			where a_name LIKE '%${_parameter}%'
+		</if>
+	</select>
+	
+	
+	<!-- 评论分页 -->
+	<select id="queryAllCommentData" resultMap="CommentMap">
+		SELECT c_id,c_detial,c_date,c_service,c_speed,c_gdescribe,u_id,g_id,c_state FROM digital_mall.`comment` c
+		<if test='keyWord!="" or keyWord!=null'>
+			WHERE c_detial LIKE '%${keyWord}%'
+		</if>
+		limit #{page},#{limit}
+	</select>
+
+	<select id="queryAllCommentCount" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		select count(*) from comment
+		<if test='_parameter != "" and _parameter != null'>
+			where c_detial LIKE '%${_parameter}%'
+		</if>
+	</select>
+
+
+</mapper>
